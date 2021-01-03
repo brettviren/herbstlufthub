@@ -35,22 +35,55 @@ driven updates of ~dzen2~.
 
 * Okay, whatever.  But how does it work?
 
-t.b.d. but basically multiple sources of events can be made available
-via ZeroMQ PUB socket and one (or more) SUB consumers may subscribe to
-one or more of the PUBs.  A few special PUBs are provided
+Let me illustrate the *classes* of herbstlufthub commands that can be
+run with the provided ~hh~ command:
 
-- ~hcpub~ :: publish ~herbstclient --idle~ events
-- ~stdpub~ :: read events on stdin and publish
-- ~pullpub~ :: recv on a PULL socket and publish 
-- ~onepub~ :: publish a single event given on the command line
+[[file:herbnet.png]]
 
-A few special SUBs are provied
+The "hub" here is conceptual and is enacted by ZeroMQ PUB/SUB links.
+By default, PUB will ~bind()~ to ~ipc://$HOME/hhub.ipc~ and SUB will
+~connect()~.  Options allow other or multiple addresses (eg, for ~tcp://~
+transport) and to switch which ends bind/connect.
 
-- ~dzensub~ :: run ~dzen2~, apply events to it via a string pattern
+The center of each pillbox node names the ~hh~ command that starts it
+and the network may have zero or more of each type of node.  
+
+On the consumer end, the currently provided SUB nodes are:
+
+- ~subpipe~ :: string format events and pipe result to command (mostly for demo)
+- ~subdzen~ :: format event data for and pipe to ~dzen2~ 
 - ~stdsub~ :: print events to stdout
 
-There is also this:
+Feeding these are the PUB nodes:
+
+- ~hcpub~ :: publish ~herbstclient --idle~ events as they come in (see [[Events]] below)
+- ~stdpub~ :: read events on ~hh~ stdin and publish
+- ~onepub~ :: publish a single event given on the command line
+- ~pullpub~ :: recv on a PULL socket and publish 
+
+A companion to this last one is:
 
 - ~onepush~ :: like ~onepub~ but use a PUSH socket eg to talk to ~pullpub~.
-  This avoids the known "slow subscriber syndrome" of one-off PUBs.
+
+In order to deal with the known ZeroMQ "slow subscriber syndrome" the
+~onepub~ has a sub-second sleep.  The ~pullpub~ + ~onepush~ is another way
+to deal with this.
+
+The diagram is drawn with no cycles but in principle (and in future
+practice) there may be some.  For example, consider a herbstluftwm
+keybinding as injecting an event which represents a request to modify
+the OS or other system (eg, change volume).  Something may subscribe
+to that event, perform the volume change and inject back in an event
+that indicates the current volume.  This finally may be consumed by
+~subdzen~ and reflected in dzen2 display.
+
+* Events
+
+As we are in the land of herbstluftwm, we take all events to be in the
+form of what ~herbstclient --idle~.  That is:
+
+#+begin_example
+[event_type]<TAB>[ID]<TAB>[args...]
+#+end_example
+
 

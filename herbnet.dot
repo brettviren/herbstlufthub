@@ -1,0 +1,27 @@
+digraph herbnet {
+        layout=dot
+        rankdir=LR
+        node[shape=Mrecord]
+
+        hub[shape=circle]
+
+        hcpub[label="{hc|hcpub|<o>PUB}"]
+        stdpub[label="{<i>stdin|stdpub|<o>PUB}"]
+        pullpub[label="{<i>PULL|pullpub|<o>PUB}"]
+        onepub[label="{<i>cli|onepub|<o>PUB}"]
+        subpipe[label="{<i>SUB|subpipe|cmd}"]
+        subdzen[label="{<i>SUB|subdzen|dzen2}"]
+        stdsub[label="{<i>SUB|stdsub|<o>stdout}"]
+        onepush[label="{cli|onepush|<o>PUSH}"]
+
+        onepub:o  -> hub
+        hcpub:o   -> hub
+        pullpub:o -> hub
+        stdpub:o  -> hub
+
+        hub -> subpipe:i
+        hub -> subdzen:i
+        hub -> stdsub:i
+
+        onepush->pullpub
+}
