@@ -1,0 +1,56 @@
+#+title: herbstlufthub
+
+This package provides ZeroMQ message passing for interacting with
+~herbstluftwm~ and other applications such as ~dzen2~.  
+
+* Dear god, why???
+
+Well, because ~herbstluftwm~ is awesome and ZeroMQ is awesome so of
+course they belong together.
+
+More practically, I wanted an event-driven "push" mechanism which
+multiplexed multiple sources of events including:
+
+- usual ~herbstclient --idle~
+
+- commands called from herbstluftwm keybindings and their results
+
+- sources from outside the WM
+
+The driving goal is to collect these events to populate a data
+stricture that can be applied to a template string in order to
+generate a ~dzen2~ or other panel display.
+
+The usual ~panel.sh~ provides most of this but as I tried to extends it
+to add things like current backlight, battery, audio volume, there
+were two things I wanted to transcend.  First, I fell into using a
+polling pattern as I could find no way to immediately update ~dzen2~
+from the command bound to a key (eg, to raise the audio volume).
+Second, while the ~panel.sh~ script is rather clever (I learned some
+new-to-me Bashisms) it was not easy for me to extend.  
+
+And so, herbstlufthub is also meant to be a factoring and
+generalization of the core part of ~panel.sh~ which allows for event
+driven updates of ~dzen2~.
+
+* Okay, whatever.  But how does it work?
+
+t.b.d. but basically multiple sources of events can be made available
+via ZeroMQ PUB socket and one (or more) SUB consumers may subscribe to
+one or more of the PUBs.  A few special PUBs are provided
+
+- ~hcpub~ :: publish ~herbstclient --idle~ events
+- ~stdpub~ :: read events on stdin and publish
+- ~pullpub~ :: recv on a PULL socket and publish 
+- ~onepub~ :: publish a single event given on the command line
+
+A few special SUBs are provied
+
+- ~dzensub~ :: run ~dzen2~, apply events to it via a string pattern
+- ~stdsub~ :: print events to stdout
+
+There is also this:
+
+- ~onepush~ :: like ~onepub~ but use a PUSH socket eg to talk to ~pullpub~.
+  This avoids the known "slow subscriber syndrome" of one-off PUBs.
+
